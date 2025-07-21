@@ -140,48 +140,62 @@
   <script>
     const csvUrl = 'https://corsproxy.io/?https://docs.google.com/spreadsheets/d/e/2PACX-1vTFq_sI1vcREz8r1trVkOjbNRROuoszK4GEEEW8jN00eBPcFbyFq32nvPjmpQ1k32MfljymMZ3DVfRP/pub?output=csv';
 
-    function renderShows(data) {
-      const list = document.getElementById("shows-list");
-      list.innerHTML = '';
+ function renderShows(data) {
+  const list = document.getElementById("shows-list");
+  list.innerHTML = '';
 
-      const headers = data[0];
-      const idx = {
-        Date: headers.indexOf("Date"),
-        Venue: headers.indexOf("Venue"),
-        City: headers.indexOf("City"),
-        Country: headers.indexOf("Country"),
-        URL: headers.indexOf("Instagram URL"),
-        Extra: headers.indexOf("Extra Info"),
-      };
+  const headers = data[0];
+  const rows = data.slice(1);
 
-      data.slice(1).forEach(row => {
-        const date = row[idx.Date];
-        const venue = row[idx.Venue];
-        const city = row[idx.City];
-        const country = row[idx.Country];
-        const url = row[idx.URL];
-        const extra = row[idx.Extra];
+  const idx = {
+    Date: headers.indexOf("Date"),
+    Venue: headers.indexOf("Venue"),
+    City: headers.indexOf("City"),
+    Country: headers.indexOf("Country"),
+    URL: headers.indexOf("Instagram URL"),
+    Extra: headers.indexOf("Extra Info"),
+  };
 
-        const li = document.createElement("li");
-        const a = document.createElement("a");
-        a.href = url;
-        a.target = "_blank";
-        a.textContent = `${date} ${venue}`;
-        li.appendChild(a);
+  // Sort rows by date (latest first)
+  rows.sort((a, b) => {
+    const dateA = new Date(a[idx.Date]);
+    const dateB = new Date(b[idx.Date]);
+    return dateB - dateA; // latest dates first
+  });
 
-        const span = document.createElement("span");
-        span.innerHTML = `, ${city} (${country})`;
-        li.appendChild(span);
+  rows.forEach(row => {
+    const date = row[idx.Date];
+    const venue = row[idx.Venue];
+    const city = row[idx.City];
+    const country = row[idx.Country];
+    const url = row[idx.URL];
+    const extra = row[idx.Extra];
 
-        if (extra) {
-          const em = document.createElement("em");
-          em.textContent = extra;
-          li.appendChild(em);
-        }
+    const li = document.createElement("li");
 
-        list.appendChild(li);
-      });
+    if (url) {
+      const a = document.createElement("a");
+      a.href = url;
+      a.target = "_blank";
+      a.textContent = `${date} ${venue}`;
+      li.appendChild(a);
+    } else {
+      li.textContent = `${date} ${venue}`;
     }
+
+    const span = document.createElement("span");
+    span.innerHTML = `, ${city} (${country})`;
+    li.appendChild(span);
+
+    if (extra) {
+      const em = document.createElement("em");
+      em.textContent = extra;
+      li.appendChild(em);
+    }
+
+    list.appendChild(li);
+  });
+}
 
     Papa.parse(csvUrl, {
       download: true,
