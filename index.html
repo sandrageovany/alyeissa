@@ -126,10 +126,19 @@
         <li><a href="mailto:alyeissa93@gmail.com">alyeissa93@gmail.com</a></li>
       </ul>
     </section>
+    
+    <!-- Updated Shows Section -->
     <section id="shows">
       <h2>Shows</h2>
-      <ul id="shows-list">
-        <li>Loading tour dates...</li>
+
+      <h3>Upcoming</h3>
+      <ul id="upcoming-shows-list">
+        <li>Loading upcoming tour dates...</li>
+      </ul>
+
+      <h3>Past</h3>
+      <ul id="past-shows-list">
+        <li>Loading past tour dates...</li>
       </ul>
     </section>
   </div>
@@ -140,62 +149,81 @@
   <script>
     const csvUrl = 'https://corsproxy.io/?https://docs.google.com/spreadsheets/d/e/2PACX-1vTFq_sI1vcREz8r1trVkOjbNRROuoszK4GEEEW8jN00eBPcFbyFq32nvPjmpQ1k32MfljymMZ3DVfRP/pub?output=csv';
 
- function renderShows(data) {
-  const list = document.getElementById("shows-list");
-  list.innerHTML = '';
+    function renderShows(data) {
+      const upcomingList = document.getElementById("upcoming-shows-list");
+      const pastList = document.getElementById("past-shows-list");
+      upcomingList.innerHTML = '';
+      pastList.innerHTML = '';
 
-  const headers = data[0];
-  const rows = data.slice(1);
+      const headers = data[0];
+      const rows = data.slice(1);
 
-  const idx = {
-    Date: headers.indexOf("Date"),
-    Venue: headers.indexOf("Venue"),
-    City: headers.indexOf("City"),
-    Country: headers.indexOf("Country"),
-    URL: headers.indexOf("Instagram URL"),
-    Extra: headers.indexOf("Extra Info"),
-  };
+      const idx = {
+        Date: headers.indexOf("Date"),
+        Venue: headers.indexOf("Venue"),
+        City: headers.indexOf("City"),
+        Country: headers.indexOf("Country"),
+        URL: headers.indexOf("Instagram URL"),
+        Extra: headers.indexOf("Extra Info"),
+      };
 
-  // Sort rows by date (latest first)
-  rows.sort((a, b) => {
-    const dateA = new Date(a[idx.Date]);
-    const dateB = new Date(b[idx.Date]);
-    return dateB - dateA; // latest dates first
-  });
+      const today = new Date();
+      const upcomingRows = [];
+      const pastRows = [];
 
-  rows.forEach(row => {
-    const date = row[idx.Date];
-    const venue = row[idx.Venue];
-    const city = row[idx.City];
-    const country = row[idx.Country];
-    const url = row[idx.URL];
-    const extra = row[idx.Extra];
+      rows.forEach(row => {
+        const showDate = new Date(row[idx.Date]);
+        if (isNaN(showDate)) return; // skip invalid dates
+        (showDate >= today ? upcomingRows : pastRows).push(row);
+      });
 
-    const li = document.createElement("li");
+      // Sort: upcoming ascending (soonest first), past descending (most recent first)
+      upcomingRows.sort((a, b) => new Date(a[idx.Date]) - new Date(b[idx.Date]));
+      pastRows.sort((a, b) => new Date(b[idx.Date]) - new Date(a[idx.Date]));
 
-    if (url) {
-      const a = document.createElement("a");
-      a.href = url;
-      a.target = "_blank";
-      a.textContent = `${date} ${venue}`;
-      li.appendChild(a);
-    } else {
-      li.textContent = `${date} ${venue}`;
+      function appendRow(row, list) {
+        const date = row[idx.Date];
+        const venue = row[idx.Venue];
+        const city = row[idx.City];
+        const country = row[idx.Country];
+        const url = row[idx.URL];
+        const extra = row[idx.Extra];
+
+        const li = document.createElement("li");
+
+        if (url) {
+          const a = document.createElement("a");
+          a.href = url;
+          a.target = "_blank";
+          a.textContent = `${date} ${venue}`;
+          li.appendChild(a);
+        } else {
+          li.textContent = `${date} ${venue}`;
+        }
+
+        const span = document.createElement("span");
+        span.innerHTML = `, ${city} (${country})`;
+        li.appendChild(span);
+
+        if (extra) {
+          const em = document.createElement("em");
+          em.textContent = extra;
+          li.appendChild(em);
+        }
+
+        list.appendChild(li);
+      }
+
+      upcomingRows.forEach(row => appendRow(row, upcomingList));
+      pastRows.forEach(row => appendRow(row, pastList));
+
+      if (!upcomingRows.length) {
+        upcomingList.innerHTML = '<li>No upcoming shows listed.</li>';
+      }
+      if (!pastRows.length) {
+        pastList.innerHTML = '<li>No past shows listed.</li>';
+      }
     }
-
-    const span = document.createElement("span");
-    span.innerHTML = `, ${city} (${country})`;
-    li.appendChild(span);
-
-    if (extra) {
-      const em = document.createElement("em");
-      em.textContent = extra;
-      li.appendChild(em);
-    }
-
-    list.appendChild(li);
-  });
-}
 
     Papa.parse(csvUrl, {
       download: true,
@@ -203,7 +231,8 @@
         renderShows(results.data);
       },
       error: function(err) {
-        document.getElementById("shows-list").innerHTML = '<li>Failed to load shows.</li>';
+        document.getElementById("upcoming-shows-list").innerHTML = '<li>Failed to load shows.</li>';
+        document.getElementById("past-shows-list").innerHTML = '';
         console.error("CSV load error", err);
       }
     });
