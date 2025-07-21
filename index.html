@@ -182,7 +182,10 @@
       pastRows.sort((a, b) => new Date(b[idx.Date]) - new Date(a[idx.Date]));
 
       function appendRow(row, list) {
-        const date = row[idx.Date];
+        const rawDate = new Date(row[idx.Date]);
+        const date = isNaN(rawDate)
+        ? row[idx.Date] // fallback in case of invalid date
+        : `${String(rawDate.getDate()).padStart(2, '0')}.${String(rawDate.getMonth() + 1).padStart(2, '0')}.${rawDate.getFullYear()}`;
         const venue = row[idx.Venue];
         const city = row[idx.City];
         const country = row[idx.Country];
