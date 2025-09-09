@@ -69,19 +69,6 @@
       font-size: 0.95em;
     }
 
-    .hidden {
-      display: none;
-    }
-
-    .see-more {
-      cursor: pointer;
-      color: #000;
-      text-decoration: underline;
-      font-size: 0.9rem;
-      margin-top: 10px;
-      display: inline-block;
-    }
-
     @media (max-width: 768px) {
       body {
         padding: 10px;
@@ -140,6 +127,7 @@
       </ul>
     </section>
     
+    <!-- Updated Shows Section -->
     <section id="shows">
       <h2>Shows</h2>
 
@@ -189,14 +177,14 @@
         (showDate >= today ? upcomingRows : pastRows).push(row);
       });
 
-      // Sort: upcoming ascending, past descending
+      // Sort: upcoming ascending (soonest first), past descending (most recent first)
       upcomingRows.sort((a, b) => new Date(a[idx.Date]) - new Date(b[idx.Date]));
       pastRows.sort((a, b) => new Date(b[idx.Date]) - new Date(a[idx.Date]));
 
       function appendRow(row, list) {
         const rawDate = new Date(row[idx.Date]);
         const date = isNaN(rawDate)
-        ? row[idx.Date]
+        ? row[idx.Date] // fallback in case of invalid date
         : `${String(rawDate.getDate()).padStart(2, '0')}.${String(rawDate.getMonth() + 1).padStart(2, '0')}.${rawDate.getFullYear()}`;
         const venue = row[idx.Venue];
         const city = row[idx.City];
@@ -249,53 +237,6 @@
         document.getElementById("upcoming-shows-list").innerHTML = '<li>Failed to load shows.</li>';
         document.getElementById("past-shows-list").innerHTML = '';
         console.error("CSV load error", err);
-      }
-    });
-
-    // See more/less logic for Projects
-    document.addEventListener("DOMContentLoaded", () => {
-      const projectsSection = document.querySelector("#projects");
-      if (!projectsSection) return;
-
-      const items = projectsSection.querySelectorAll(".project-header, .project-subheader, .project-description, br");
-      const maxVisible = 4;
-      const groups = [];
-      let currentGroup = [];
-
-      items.forEach(el => {
-        if (el.classList.contains("project-header")) {
-          if (currentGroup.length) groups.push(currentGroup);
-          currentGroup = [el];
-        } else {
-          currentGroup.push(el);
-        }
-      });
-      if (currentGroup.length) groups.push(currentGroup);
-
-      groups.forEach((group, i) => {
-        if (i >= maxVisible) {
-          group.forEach(el => el.classList.add("hidden"));
-        }
-      });
-
-      if (groups.length > maxVisible) {
-        const toggle = document.createElement("span");
-        toggle.className = "see-more";
-        toggle.textContent = "See more";
-        toggle.addEventListener("click", () => {
-          const hidden = projectsSection.querySelectorAll(".hidden");
-          const isHidden = hidden.length > 0;
-          if (isHidden) {
-            hidden.forEach(el => el.classList.remove("hidden"));
-            toggle.textContent = "See less";
-          } else {
-            groups.forEach((group, i) => {
-              if (i >= maxVisible) group.forEach(el => el.classList.add("hidden"));
-            });
-            toggle.textContent = "See more";
-          }
-        });
-        projectsSection.appendChild(toggle);
       }
     });
   </script>
