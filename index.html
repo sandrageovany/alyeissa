@@ -17,8 +17,56 @@
     }
 
     .content {
-      max-width: 800px;
+      max-width: 1100px;
       margin: 0 auto;
+    }
+
+    .columns {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 0 60px;
+      align-items: start;
+    }
+
+    .scroll-fade {
+      position: relative;
+    }
+
+    .scroll-fade::after {
+      content: '';
+      position: absolute;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      height: 50px;
+      background: linear-gradient(rgba(255, 51, 153, 0), #FF3399);
+      pointer-events: none;
+    }
+
+    #past-shows-list {
+      max-height: 45vh;
+      overflow-y: auto;
+      padding-right: 15px;
+      padding-bottom: 40px;
+    }
+
+    @supports (-moz-appearance: none) {
+      #past-shows-list {
+        scrollbar-width: thin;
+        scrollbar-color: #000 rgba(0, 0, 0, 0.15);
+      }
+    }
+
+    #past-shows-list::-webkit-scrollbar {
+      width: 5px;
+    }
+
+    #past-shows-list::-webkit-scrollbar-track {
+      background: rgba(0, 0, 0, 0.15);
+    }
+
+    #past-shows-list::-webkit-scrollbar-thumb {
+      background: #000;
     }
 
     section {
@@ -82,6 +130,21 @@
       body {
         padding: 10px;
       }
+
+      .columns {
+        grid-template-columns: 1fr;
+      }
+
+      #past-shows-list {
+        max-height: none;
+        overflow-y: visible;
+        padding-right: 0;
+        padding-bottom: 0;
+      }
+
+      .scroll-fade::after {
+        display: none;
+      }
     }
   </style>
 </head>
@@ -96,6 +159,8 @@
       <p><a href="https://easteast.world/posts/621" target="_blank">Interview with Aly Eissa</a></p>
     </section>
 
+    <div class="columns">
+    <div class="col-left">
     <section id="releases">
       <h2>Releases</h2>
 
@@ -129,7 +194,9 @@
       <h2>Contact</h2>
       <p><a href="mailto:alyeissa93@gmail.com">alyeissa93@gmail.com</a></p>
     </section>
-    
+    </div>
+
+    <div class="col-right">
     <!-- Updated Shows Section -->
     <section id="shows">
       <h2>Shows</h2>
@@ -140,10 +207,14 @@
       </ul>
 
       <h3>Past</h3>
-      <ul id="past-shows-list">
-        <li>Loading past tour dates...</li>
-      </ul>
+      <div class="scroll-fade">
+        <ul id="past-shows-list">
+          <li>Loading past tour dates...</li>
+        </ul>
+      </div>
     </section>
+    </div>
+    </div>
   </div>
 
   <!-- PapaParse for CSV parsing -->
